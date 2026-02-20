@@ -21,8 +21,8 @@ class MainActivity : ComponentActivity() {
             PrakTAM2_2417051044Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
-                        npm = " ",
+                        name = "Miqdad Dzakiy Arroyan",
+                        npm = "2417051044",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
