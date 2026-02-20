@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "Android",
-                        npm = "2417051044",
+                        npm = " ",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, npm: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Halo $name saya dengan $npm siap belajar Compose!",
+        text = "Halo, saya $name dengan NPM $npm siap belajar Compose!",
         modifier = modifier
     )
 }
@@ -43,6 +43,6 @@ fun Greeting(name: String, npm: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     PrakTAM2_2417051044Theme {
-        Greeting("Android", npm = "2417051044")
+        Greeting("Miqdad Dzakiy Arroyan", npm = "2417051044")
     }
 }
