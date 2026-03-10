@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 data class StudySession(
     val nama: String,
     val deskripsi: String,
-    val currentStreak: Int,
-    val durasiHariIni: Int,
+    val Durasi: Int,
     @DrawableRes val imageRes: Int
 )

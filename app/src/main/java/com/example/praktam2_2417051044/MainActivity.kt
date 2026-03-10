@@ -1,5 +1,6 @@
 package com.example.praktam2_2417051044
 
+import model.StudySession
 import model.StudySessionSource
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,13 +8,21 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.praktam2_2417051044.ui.theme.PrakTAM2_2417051044Theme
 
 
@@ -23,31 +32,69 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PrakTAM2_2417051044Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting()
-                }
+                DaftarBelajarScreen()
             }
         }
     }
 }
 
 @Composable
-fun Greeting() {
+fun DaftarBelajarScreen() {
 
-    val session = StudySessionSource.dummySessions[0]
+    val sessions = StudySessionSource.dummySessions
 
-    Column(modifier = Modifier.fillMaxSize().padding(all = 24.dp)){
-        Text(text = "Nama: ${session.nama}")
-        Text(text = "Deskripsi: ${session.deskripsi}")
-        Text(text = "Hari Berjalan: ${session.currentStreak} hari")
-        Text(text = "Durasi hari ini: ${session.durasiHariIni} menit")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+
+        Text(
+            text = "KonsistenBelajar",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        sessions.forEach { session ->
+            DetailBelajarScreen(session)
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun DetailBelajarScreen(session: StudySession) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+
+        Image(
+            painter = painterResource(id = session.imageRes),
+            contentDescription = session.nama,
+            modifier = Modifier.size(120.dp)
+        )
+
+        Text(
+            text = session.nama,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(text = session.deskripsi)
+        Text(text = "Durasi: ${session.Durasi} jam")
+
+        Button(onClick = { }) {
+            Text("Done")
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun DaftarBelajarPreview() {
     PrakTAM2_2417051044Theme {
-        Greeting()
+        DaftarBelajarScreen()
     }
 }
