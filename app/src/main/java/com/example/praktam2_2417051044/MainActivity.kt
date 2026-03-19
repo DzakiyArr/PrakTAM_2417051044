@@ -21,6 +21,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.praktam2_2417051044.ui.theme.PrakTAM2_2417051044Theme
@@ -47,7 +53,7 @@ fun DaftarBelajarScreen() {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
 
         Text(
@@ -57,13 +63,15 @@ fun DaftarBelajarScreen() {
 
         sessions.forEach { session ->
             DetailBelajarScreen(session)
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(5.dp))
         }
     }
 }
 
 @Composable
 fun DetailBelajarScreen(session: StudySession) {
+
+    var isDone by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -85,8 +93,15 @@ fun DetailBelajarScreen(session: StudySession) {
         Text(text = session.deskripsi)
         Text(text = "Durasi: ${session.Durasi} jam")
 
-        Button(onClick = { }) {
-            Text("Done")
+        Button(
+            onClick = { isDone = !isDone },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isDone) Color.Green else Color.Red
+            )
+        ) {
+            Text(
+                text = if (isDone) "Sudah Selesai" else "Done"
+            )
         }
     }
 }
