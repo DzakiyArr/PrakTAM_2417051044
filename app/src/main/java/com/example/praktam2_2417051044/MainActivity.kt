@@ -29,12 +29,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.lazy.items
 import com.example.praktam2_2417051044.ui.theme.PrakTAM2_2417051044Theme
+import com.example.praktam2_2417051044.ui.theme.DoneGreen
+import com.example.praktam2_2417051044.ui.theme.NotDoneRed
 
 
 class MainActivity : ComponentActivity() {
@@ -54,25 +54,22 @@ fun DaftarBelajarScreen() {
     val sessions = StudySessionSource.dummySessions
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding(),
+        modifier = Modifier.fillMaxSize().statusBarsPadding(),
         contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         item {
             Text(
-                text = "KonsistenBelajar",
+                text = "Rekomendasi Belajar",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                color = MaterialTheme.colorScheme.primary
             )
 
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(sessions) { session ->
-                    RowItemBelajar(session = session)
+                    StudyRowItem(session = session)
                 }
             }
 
@@ -80,9 +77,7 @@ fun DaftarBelajarScreen() {
 
             Text(
                 text = "Daftar Aktivitas Lengkap",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
+                style = MaterialTheme.typography.titleLarge
             )
         }
 
@@ -93,29 +88,27 @@ fun DaftarBelajarScreen() {
 }
 
 @Composable
-fun RowItemBelajar(session: StudySession) {
+fun StudyRowItem(session: StudySession) {
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
             Image(
                 painter = painterResource(id = session.imageRes),
                 contentDescription = session.nama,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
+                modifier = Modifier.fillMaxWidth().height(100.dp),
                 contentScale = ContentScale.Crop
             )
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
                     text = session.nama,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = "Durasi: ${session.Durasi} jam",
+                    text = "${session.Durasi} Jam",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -131,32 +124,25 @@ fun DetailBelajarScreen(session: StudySession) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Image(
                 painter = painterResource(id = session.imageRes),
                 contentDescription = session.nama,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
+                modifier = Modifier.fillMaxWidth().height(200.dp),
                 contentScale = ContentScale.Crop
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = session.nama,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = session.deskripsi,
                     style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Durasi: ${session.Durasi} jam",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(vertical = 4.dp)
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -165,10 +151,10 @@ fun DetailBelajarScreen(session: StudySession) {
                     onClick = { isDone = !isDone },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isDone) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        containerColor = if (isDone) DoneGreen else NotDoneRed
                     )
                 ) {
-                    Text(text = if (isDone) "Sudah Selesai" else "Done")
+                    Text(text = if (isDone) "Sudah Selesai" else "Done", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
