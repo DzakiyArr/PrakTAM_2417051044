@@ -32,9 +32,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import com.example.praktam2_2417051044.ui.theme.PrakTAM2_2417051044Theme
 import com.example.praktam2_2417051044.ui.theme.DoneGreen
 import com.example.praktam2_2417051044.ui.theme.NotDoneRed
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 
 class MainActivity : ComponentActivity() {
@@ -53,37 +61,48 @@ class MainActivity : ComponentActivity() {
 fun DaftarBelajarScreen() {
     val sessions = StudySessionSource.dummySessions
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().statusBarsPadding(),
-        contentPadding = PaddingValues(24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-        item {
-            Text(
-                text = "Rekomendasi Belajar",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+    val snackbarHostState = remember { SnackbarHostState() }
 
-            Spacer(modifier = Modifier.height(16.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding(),
+            contentPadding = PaddingValues(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            item {
+                Text(
+                    text = "Rekomendasi Belajar",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(sessions) { session ->
-                    StudyRowItem(session = session)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(sessions) { session ->
+                        StudyRowItem(session = session)
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(45.dp))
+
+                Text(
+                    text = "Daftar Aktivitas Lengkap",
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
 
-            Spacer(modifier = Modifier.height(45.dp))
-
-            Text(
-                text = "Daftar Aktivitas Lengkap",
-                style = MaterialTheme.typography.titleLarge
-            )
+            items(sessions) { session ->
+                DetailBelajarScreen(session = session, snackbarHostState = snackbarHostState)
+            }
         }
 
-        items(sessions) { session ->
-            DetailBelajarScreen(session = session)
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -99,7 +118,9 @@ fun StudyRowItem(session: StudySession) {
             Image(
                 painter = painterResource(id = session.imageRes),
                 contentDescription = session.nama,
-                modifier = Modifier.fillMaxWidth().height(100.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
                 contentScale = ContentScale.Crop
             )
             Column(modifier = Modifier.padding(8.dp)) {
@@ -118,8 +139,10 @@ fun StudyRowItem(session: StudySession) {
 }
 
 @Composable
-fun DetailBelajarScreen(session: StudySession) {
+fun DetailBelajarScreen(session: StudySession, snackbarHostState: SnackbarHostState) {
     var isDone by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -131,7 +154,9 @@ fun DetailBelajarScreen(session: StudySession) {
             Image(
                 painter = painterResource(id = session.imageRes),
                 contentDescription = session.nama,
-                modifier = Modifier.fillMaxWidth().height(200.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
                 contentScale = ContentScale.Crop
             )
 
@@ -148,13 +173,34 @@ fun DetailBelajarScreen(session: StudySession) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
-                    onClick = { isDone = !isDone },
+                    onClick = {
+                        if (!isDone) {
+                            coroutineScope.launch {
+                                isLoading = true
+                                delay(2000) // Simulasi loading 2 detik
+                                isLoading = false
+                                isDone = true
+                                snackbarHostState.showSnackbar("Aktivitas ${session.nama} berhasil diselesaikan!")
+                            }
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading && !isDone,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isDone) DoneGreen else NotDoneRed
                     )
                 ) {
-                    Text(text = if (isDone) "Sudah Selesai" else "Done", color = MaterialTheme.colorScheme.onPrimary)
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Memproses...", color = MaterialTheme.colorScheme.onPrimary)
+                    } else {
+                        Text(text = if (isDone) "Sudah Selesai" else "Tandai Selesai", color = MaterialTheme.colorScheme.onPrimary)
+                    }
                 }
             }
         }
