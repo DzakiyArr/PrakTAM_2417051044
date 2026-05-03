@@ -1,49 +1,31 @@
 package com.example.praktam2_2417051044
 
-import model.StudySession
-import model.StudySessionSource
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.example.praktam2_2417051044.model.StudySession
+import com.example.praktam2_2417051044.network.RetrofitClient
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.example.praktam2_2417051044.ui.theme.PrakTAM2_2417051044Theme
 import com.example.praktam2_2417051044.ui.theme.DoneGreen
 import com.example.praktam2_2417051044.ui.theme.NotDoneRed
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +33,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PrakTAM2_2417051044Theme {
-                DaftarBelajarScreen()
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    DaftarBelajarScreen()
+                }
             }
         }
     }
@@ -59,43 +43,77 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DaftarBelajarScreen() {
-    val sessions = StudySessionSource.dummySessions
-
+    var sessions by remember { mutableStateOf<List<StudySession>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isError by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(Unit) {
+        try {
+            sessions = RetrofitClient.instance.getSessions()
+            isLoading = false
+            isError = false
+        } catch (e: Exception) {
+            isLoading = false
+            isError = true
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding(),
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            item {
-                Text(
-                    text = "Rekomendasi Belajar",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    items(sessions) { session ->
-                        StudyRowItem(session = session)
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (isError || sessions.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Gagal Memuat Data",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Red
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Pastikan koneksi internet Anda menyala",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().statusBarsPadding(),
+                contentPadding = PaddingValues(24.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                item {
+                    Text(
+                        text = "Rekomendasi Belajar",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        items(sessions) { session ->
+                            StudyRowItem(session = session)
+                        }
                     }
+                    Spacer(modifier = Modifier.height(45.dp))
+                    Text(
+                        text = "Daftar Aktivitas Lengkap",
+                        style = MaterialTheme.typography.titleLarge
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(45.dp))
-
-                Text(
-                    text = "Daftar Aktivitas Lengkap",
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-
-            items(sessions) { session ->
-                DetailBelajarScreen(session = session, snackbarHostState = snackbarHostState)
+                items(sessions) { session ->
+                    DetailBelajarScreen(session = session, snackbarHostState = snackbarHostState)
+                }
             }
         }
 
@@ -115,12 +133,12 @@ fun StudyRowItem(session: StudySession) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            Image(
-                painter = painterResource(id = session.imageRes),
+            AsyncImage(
+                model = session.imageUrl,
                 contentDescription = session.nama,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
+                placeholder = painterResource(id = R.drawable.ic_launcher_background),
+                error = painterResource(id = R.drawable.ic_launcher_foreground),
+                modifier = Modifier.fillMaxWidth().height(100.dp),
                 contentScale = ContentScale.Crop
             )
             Column(modifier = Modifier.padding(8.dp)) {
@@ -129,7 +147,7 @@ fun StudyRowItem(session: StudySession) {
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = "${session.Durasi} Jam",
+                    text = "${session.durasi} Jam",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -141,7 +159,7 @@ fun StudyRowItem(session: StudySession) {
 @Composable
 fun DetailBelajarScreen(session: StudySession, snackbarHostState: SnackbarHostState) {
     var isDone by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
+    var isProcessLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     Card(
@@ -151,12 +169,12 @@ fun DetailBelajarScreen(session: StudySession, snackbarHostState: SnackbarHostSt
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Image(
-                painter = painterResource(id = session.imageRes),
+            AsyncImage(
+                model = session.imageUrl,
                 contentDescription = session.nama,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
+                placeholder = painterResource(id = R.drawable.ic_launcher_background),
+                error = painterResource(id = R.drawable.ic_launcher_foreground),
+                modifier = Modifier.fillMaxWidth().height(200.dp),
                 contentScale = ContentScale.Crop
             )
 
@@ -176,21 +194,21 @@ fun DetailBelajarScreen(session: StudySession, snackbarHostState: SnackbarHostSt
                     onClick = {
                         if (!isDone) {
                             coroutineScope.launch {
-                                isLoading = true
-                                delay(2000) // Simulasi loading 2 detik
-                                isLoading = false
+                                isProcessLoading = true
+                                delay(2000)
+                                isProcessLoading = false
                                 isDone = true
-                                snackbarHostState.showSnackbar("Aktivitas ${session.nama} berhasil diselesaikan!")
+                                snackbarHostState.showSnackbar("Aktivitas ${session.nama} selesai!")
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading && !isDone,
+                    enabled = !isProcessLoading && !isDone,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isDone) DoneGreen else NotDoneRed
                     )
                 ) {
-                    if (isLoading) {
+                    if (isProcessLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -204,13 +222,5 @@ fun DetailBelajarScreen(session: StudySession, snackbarHostState: SnackbarHostSt
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DaftarBelajarPreview() {
-    PrakTAM2_2417051044Theme {
-        DaftarBelajarScreen()
     }
 }
