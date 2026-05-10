@@ -19,8 +19,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.praktam2_2417051044.model.StudySession
-import com.example.praktam2_2417051044.network.RetrofitClient
+import com.example.praktam2_2417051044.data.model.StudySession
+import com.example.praktam2_2417051044.data.api.RetrofitClient
+import com.example.praktam2_2417051044.data.repository.StudyRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.example.praktam2_2417051044.ui.theme.PrakTAM2_2417051044Theme
@@ -42,21 +43,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DaftarBelajarScreen() {
+fun DaftarBelajarScreen(onSessionLoaded: (List<StudySession>) -> Unit = {}) {
     var sessions by remember { mutableStateOf<List<StudySession>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    var repository = remember { StudyRepository() }
 
     LaunchedEffect(Unit) {
-        try {
-            sessions = RetrofitClient.instance.getSessions()
-            isLoading = false
-            isError = false
-        } catch (e: Exception) {
-            isLoading = false
-            isError = true
-        }
+       isLoading = true
+       sessions = repository.getSessions()
+       onSessionLoaded(sessions)
+       isLoading = false
+       isError = sessions.isEmpty()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
