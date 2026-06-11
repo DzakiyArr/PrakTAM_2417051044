@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.praktam2_2417051044.data.model.StudySession
 import com.example.praktam2_2417051044.data.repository.StudyRepository
@@ -103,6 +103,7 @@ fun DaftarBelajarScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val totalJam = getTotalJam(sessions)
+    val totalSesi = sessions.size
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -113,15 +114,23 @@ fun DaftarBelajarScreen(
         ) {
 
             item {
-                SummaryCard(totalJam)
-            }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SummaryItem(
+                        title = "Total Belajar",
+                        value = totalJam,
+                        modifier = Modifier.weight(1f)
+                    )
 
-            item {
-                Text("Rekomendasi Belajar", fontWeight = FontWeight.Bold)
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(sessions) {
-                        StudyRowItem(it)
-                    }
+                    SummaryItem(
+                        title = "Total Sesi",
+                        value = "$totalSesi sesi",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
 
@@ -146,58 +155,37 @@ fun DaftarBelajarScreen(
 }
 
 @Composable
-fun SummaryCard(totalJam: String) {
+fun SummaryItem(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF6C63FF)
-        )
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text("Total Belajar", color = Color.White.copy(alpha = 0.7f))
-
-            Text(
-                totalJam,
-                color = Color.White,
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-@Composable
-fun StudyRowItem(session: StudySession) {
-    val jam = session.durasi / 60
-    val menit = session.durasi % 60
-    Card(
-        modifier = Modifier.width(160.dp),
-        shape = RoundedCornerShape(16.dp),
+        ),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
-        Column {
-            AsyncImage(
-                model = session.imageUrl,
-                contentDescription = session.nama,
-                modifier = Modifier
-                    .height(110.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Text(
+                text = title,
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 12.sp
             )
 
-            Column(modifier = Modifier.padding(10.dp)) {
-                Text(
-                    session.nama,
-                    fontWeight = FontWeight.SemiBold
-                )
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    "${jam}j ${menit}m",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
+            Text(
+                text = value,
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -254,20 +242,47 @@ fun DetailBelajarScreen(session: StudySession,
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row {
+                            Button(
+                                onClick = { isEditing = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
+                                shape = RoundedCornerShape(50)
+                            ) {
+                                Text("Edit")
+                            }
 
-                        Button(
-                            onClick = { isEditing = true }
-                        ) {
-                            Text("Edit")
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Button(
+                                onClick = { onDelete(session) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                                shape = RoundedCornerShape(50)
+                            ) {
+                                Text("Delete")
+                            }
+                        }
+                        val jam = session.durasi / 60
+                        val menit = session.durasi % 60
+
+                        val durasiText = if (jam > 0) {
+                            "${jam}j ${menit}m"
+                        } else {
+                            "${menit}m"
                         }
 
-                        Button(
-                            onClick = { onDelete(session) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                        ) {
-                            Text("Delete")
-                        }
+                        Text(
+                            text = durasiText,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF2962FF)
+                        )
                     }
                 }
             }
@@ -320,7 +335,7 @@ fun FormTambahScreen(
                         nama = nama,
                         deskripsi = deskripsi,
                         durasi = durasi.toInt(),
-                        imageUrl = "https://picsum.photos/200"
+                        imageUrl = "https://shorturl.at/uBZ0Z"
                     )
 
                     onTambah(newSession)
@@ -339,6 +354,7 @@ fun FormTambahScreen(
 
 fun getTotalJam(sessions: List<StudySession>): String {
     val totalMenit = sessions.sumOf { it.durasi }
+
 
     val jam = totalMenit / 60
     val menit = totalMenit % 60
